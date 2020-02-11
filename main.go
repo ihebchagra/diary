@@ -91,7 +91,7 @@ func main() {
 	}
 	if _, err := os.Stat(diarydir); os.IsNotExist(err) {
 		os.Mkdir(diarydir, 0755)
-	}t 
+	}
 
 	if len(os.Args) > 1 {
 		if os.Args[1] == "search" {
