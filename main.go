@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"strings"
 	"errors"
+	"path/filepath"
 )
 
 func check(e error) {
@@ -17,6 +18,30 @@ func check(e error) {
         fmt.Println(e)
 	os.Exit(1)
     }
+}
+
+func deleteHTML(diarydir string) {
+	files, err := filepath.Glob(diarydir + "*.html")
+	check(err)
+	for _, f := range files {
+		err = os.Remove(f)
+		check(err)
+	}
+}
+
+
+
+func formatDate(t time.Time) string {
+    suffix := "th"
+    switch t.Day() {
+    case 1, 21, 31:
+        suffix = "st"
+    case 2, 22:
+        suffix = "nd"
+    case 3, 23:
+        suffix = "rd"
+    }
+    return t.Format("January 2" + suffix + " 2006")
 }
 
 func diarysearch(diarydir string) {
@@ -64,13 +89,16 @@ func diarytoday(diarydir string) {
 
 	t := time.Now()
 	entry := t.Format("02-Jan-2006")
-	file := fmt.Sprintf("%s%s",diarydir,entry)
+	base := fmt.Sprintf("%s%s",diarydir,entry)
+	file := fmt.Sprintf("%s.md",base)
 
-	fancydate := t.Format("January 02, 2006")
-	content := []byte(fmt.Sprintf("%s\n\nDear Diary,\n\n\n", fancydate))
+	fancydate := formatDate(t)
+	content := []byte(fmt.Sprintf("%% %s\n\n*Dear Diary*,\n\n\n", fancydate))
 
+	isnewentry := false
 	cmd := exec.Command("")
 	if _, err := os.Stat(file); os.IsNotExist(err) {
+		isnewentry = true
 		ioutil.WriteFile(file, content, 0755)
 		cmd = exec.Command(editor,"+ normal G $","+startinsert",file)
 	} else {
@@ -81,6 +109,15 @@ func diarytoday(diarydir string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 	cmd.Run()
+
+	if isnewentry {
+		newcontent, err := ioutil.ReadFile(file)
+		check(err)
+		if strings.TrimSpace(string(newcontent)) == strings.TrimSpace(string(content)) {
+			err = os.Remove(file)
+			check(err)
+		}
+	}
 }
 
 func main() {
@@ -93,6 +130,8 @@ func main() {
 		os.Mkdir(diarydir, 0755)
 	}
 
+	deleteHTML(diarydir)
+
 	if len(os.Args) > 1 {
 		if os.Args[1] == "search" {
 			diarysearch(diarydir)
@@ -100,4 +139,7 @@ func main() {
 	} else {
 		diarytoday(diarydir)
 	}
+
+
+	deleteHTML(diarydir)
 }
