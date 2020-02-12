@@ -135,6 +135,8 @@ func main() {
 	if len(os.Args) > 1 {
 		if os.Args[1] == "search" {
 			diarysearch(diarydir)
+		} else {
+			fmt.Println("Either type [ diary search ] to search entries or just [ diary ] to start or add to today's one");
 		}
 	} else {
 		diarytoday(diarydir)
