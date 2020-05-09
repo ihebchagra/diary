@@ -88,7 +88,7 @@ func diarytoday(diarydir string) {
 	editor := os.Getenv("EDITOR");
 
 	t := time.Now()
-	entry := t.Format("02-Jan-2006")
+	entry := t.Format("2006-01-02")
 	base := fmt.Sprintf("%s%s",diarydir,entry)
 	file := fmt.Sprintf("%s.md",base)
 
